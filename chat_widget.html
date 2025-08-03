@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Bot - Jaripeo Ranchero</title>
+    <style>
+        /* Estilos para el chat widget */
+        .chat-widget {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 350px;
+            height: 500px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 30px rgba(0,0,0,0.3);
+            display: none;
+            flex-direction: column;
+            z-index: 10000;
+            font-family: Arial, sans-serif;
+        }
+
+        .chat-widget.open {
+            display: flex;
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, #8B4513, #654321);
+            color: white;
+            padding: 15px;
+            border-radius: 15px 15px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-header h3 {
+            margin: 0;
+            font-size: 1.1em;
+        }
+
+        .chat-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.2em;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .chat-close:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            max-height: 350px;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .message.user {
+            text-align: right;
+        }
+
+        .message.bot {
+            text-align: left;
+        }
+
+        .message-bubble {
+            display: inline-block;
+            padding: 10px 15px;
+            border-radius: 18px;
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+
+        .message.user .message-bubble {
+            background: #DAA520;
+            color: white;
+        }
+
+        .message.bot .message-bubble {
+            background: #f1f1f1;
+            color: #333;
+        }
+
+        .message-time {
+            font-size: 0.8em;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .chat-input-container {
+            padding: 15px;
+            border-top: 1px solid #eee;
+            border-radius: 0 0 15px 15px;
+        }
+
+        .chat-input-form {
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 10px 15px;
+            border: 2px solid #ddd;
+            border-radius: 25px;
+            outline: none;
+            font-size: 14px;
+        }
+
+        .chat-input:focus {
+            border-color: #DAA520;
+        }
+
+        .chat-send {
+            background: #DAA520;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 50%;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .chat-send:hover {
+            background: #B8860B;
+        }
+
+        .chat-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #8B4513, #654321);
+            color: white;
+            border: none;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.5em;
+            box-shadow: 0 4px 15px rgba(139, 69, 19, 0.4);
+            z-index: 10001;
+            transition: all 0.3s ease;
+        }
+
+        .chat-toggle:hover {
+            transform: scale(1.1);
+        }
+
+        .typing-indicator {
+            display: none;
+            padding: 10px 15px;
+            color: #666;
+            font-style: italic;
+        }
+
+        .typing-dots {
+            display: inline-block;
+        }
+
+        .typing-dots::after {
+            content: '';
+            animation: dots 1.5s infinite;
+        }
+
+        @keyframes dots {
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60%, 100% { content: '...'; }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            .chat-widget {
+                width: 90%;
+                right: 5%;
+                height: 70vh;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Botón para abrir el chat -->
+    <button class="chat-toggle" id="chatToggle">🤠</button>
+
+    <!-- Widget del chat -->
+    <div class="chat-widget" id="chatWidget">
+        <div class="chat-header">
+            <h3>🤠 Chat Jaripeo</h3>
+            <button class="chat-close" id="chatClose">×</button>
+        </div>
+        
+        <div class="chat-messages" id="chatMessages">
+            <div class="message bot">
+                <div class="message-bubble">
+                    ¡Hola! Soy tu compadre virtual del jaripeo 🤠<br>
+                    ¡Pregúntame lo que quieras sobre tradiciones mexicanas!
+                </div>
+                <div class="message-time" id="welcomeTime"></div>
+            </div>
+        </div>
+        
+        <div class="typing-indicator" id="typingIndicator">
+            <span class="typing-dots">El bot está escribiendo</span>
+        </div>
+        
+        <div class="chat-input-container">
+            <form class="chat-input-form" id="chatForm">
+                <input 
+                    type="text" 
+                    class="chat-input" 
+                    id="chatInput" 
+                    placeholder="Escribe tu mensaje..." 
+                    required
+                    autocomplete="off"
+                >
+                <button type="submit" class="chat-send">➤</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        class ChatBot {
+            constructor() {
+                this.apiUrl = 'http://localhost/chat%20database/chat_api_v2.php';
+                this.userId = this.generateUserId();
+                this.isOpen = false;
+                
+                this.initializeElements();
+                this.bindEvents();
+                this.loadChatHistory();
+                this.setWelcomeTime();
+            }
+
+            generateUserId() {
+                let userId = localStorage.getItem('chatUserId');
+                if (!userId) {
+                    userId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                    localStorage.setItem('chatUserId', userId);
+                }
+                return userId;
+            }
+
+            initializeElements() {
+                this.chatToggle = document.getElementById('chatToggle');
+                this.chatWidget = document.getElementById('chatWidget');
+                this.chatClose = document.getElementById('chatClose');
+                this.chatMessages = document.getElementById('chatMessages');
+                this.chatForm = document.getElementById('chatForm');
+                this.chatInput = document.getElementById('chatInput');
+                this.typingIndicator = document.getElementById('typingIndicator');
+            }
+
+            bindEvents() {
+                this.chatToggle.addEventListener('click', () => this.toggleChat());
+                this.chatClose.addEventListener('click', () => this.closeChat());
+                this.chatForm.addEventListener('submit', (e) => this.sendMessage(e));
+            }
+
+            toggleChat() {
+                this.isOpen = !this.isOpen;
+                if (this.isOpen) {
+                    this.chatWidget.classList.add('open');
+                    this.chatToggle.style.display = 'none';
+                    this.chatInput.focus();
+                } else {
+                    this.closeChat();
+                }
+            }
+
+            closeChat() {
+                this.isOpen = false;
+                this.chatWidget.classList.remove('open');
+                this.chatToggle.style.display = 'block';
+            }
+
+            setWelcomeTime() {
+                const welcomeTimeElement = document.getElementById('welcomeTime');
+                if (welcomeTimeElement) {
+                    welcomeTimeElement.textContent = new Date().toLocaleTimeString('es-ES', {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                }
+            }
+
+            async loadChatHistory() {
+                try {
+                    const response = await fetch(`${this.apiUrl}?action=getHistory&userId=${this.userId}`);
+                    const data = await response.json();
+                    
+                    if (data.success && data.messages.length > 0) {
+                        // Limpiar mensaje de bienvenida si hay historial
+                        this.chatMessages.innerHTML = '';
+                        
+                        data.messages.forEach(message => {
+                            this.addMessageToChat(message.message, message.sender, message.created_at);
+                        });
+                    }
+                } catch (error) {
+                    console.error('Error cargando historial:', error);
+                }
+            }
+
+            async sendMessage(e) {
+                e.preventDefault();
+                
+                const message = this.chatInput.value.trim();
+                if (!message) return;
+
+                // Agregar mensaje del usuario
+                this.addMessageToChat(message, 'user');
+                this.chatInput.value = '';
+
+                // Mostrar indicador de escritura
+                this.showTypingIndicator();
+
+                try {
+                    const response = await fetch(this.apiUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            action: 'sendMessage',
+                            userId: this.userId,
+                            message: message
+                        })
+                    });
+
+                    const data = await response.json();
+                    
+                    // Ocultar indicador de escritura
+                    this.hideTypingIndicator();
+
+                    if (data.success) {
+                        // Agregar respuesta del bot
+                        this.addMessageToChat(data.botResponse, 'bot');
+                    } else {
+                        this.addMessageToChat('Lo siento, hubo un error. ¿Puedes intentar de nuevo? 😅', 'bot');
+                    }
+                } catch (error) {
+                    this.hideTypingIndicator();
+                    this.addMessageToChat('No pude conectarme al servidor. ¿Puedes verificar tu conexión? 🤔', 'bot');
+                    console.error('Error enviando mensaje:', error);
+                }
+            }
+
+            addMessageToChat(message, sender, timestamp = null) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${sender}`;
+                
+                const time = timestamp ? 
+                    new Date(timestamp).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) :
+                    new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+
+                messageDiv.innerHTML = `
+                    <div class="message-bubble">${message}</div>
+                    <div class="message-time">${time}</div>
+                `;
+
+                this.chatMessages.appendChild(messageDiv);
+                this.scrollToBottom();
+            }
+
+            showTypingIndicator() {
+                this.typingIndicator.style.display = 'block';
+                this.scrollToBottom();
+            }
+
+            hideTypingIndicator() {
+                this.typingIndicator.style.display = 'none';
+            }
+
+            scrollToBottom() {
+                setTimeout(() => {
+                    this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
+                }, 100);
+            }
+        }
+
+        // Inicializar el chat cuando se carga la página
+        document.addEventListener('DOMContentLoaded', () => {
+            new ChatBot();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,1162 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administración del Bot</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+        
+        .global-search {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border-left: 4px solid #667eea;
+        }
+        
+        .search-container {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .search-input-group {
+            flex: 1;
+            min-width: 300px;
+            position: relative;
+        }
+        
+        .search-input-group input {
+            width: 100%;
+            padding: 15px 50px 15px 20px;
+            border: 2px solid #e9ecef;
+            border-radius: 25px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+        
+        .search-input-group input:focus {
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .search-icon {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #667eea;
+            font-size: 18px;
+        }
+        
+        .search-filters {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .search-filter {
+            padding: 8px 15px;
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+        
+        .search-filter.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+        
+        .search-results {
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .search-result-item {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .search-result-item:hover {
+            border-color: #667eea;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.1);
+        }
+        
+        .search-result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .search-result-title {
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .search-result-type {
+            background: #667eea;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+        }
+        
+        .search-result-content {
+            color: #666;
+            line-height: 1.4;
+        }
+        
+        .search-highlight {
+            background: #ffeb3b;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+        
+        .tabs {
+            display: flex;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #eee;
+        }
+        
+        .tab {
+            padding: 15px 25px;
+            cursor: pointer;
+            background: #f8f9fa;
+            border: none;
+            margin-right: 10px;
+            border-radius: 10px 10px 0 0;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        .tab.active {
+            background: #667eea;
+            color: white;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .responses-list {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+        }
+        
+        .response-item {
+            background: #f8f9fa;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 6px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .table-selector {
+            margin-bottom: 20px;
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .data-table th,
+        .data-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .data-table th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: bold;
+        }
+        
+        .data-table tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .table-info {
+            background: #e9ecef;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .table-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .table-stat {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 20px;
+            gap: 10px;
+        }
+        
+        .pagination button {
+            padding: 8px 12px;
+            background: #f8f9fa;
+            color: #333;
+            border: 1px solid #ddd;
+        }
+        
+        .pagination button.active {
+            background: #667eea;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🤖 Panel de Administración del Bot</h1>
+        
+        <!-- Buscador Global -->
+        <div class="global-search">
+            <div class="search-container">
+                <div class="search-input-group">
+                    <input type="text" id="globalSearch" placeholder="Buscar en todo el sistema..." onkeyup="performGlobalSearch()">
+                    <i class="search-icon">🔍</i>
+                </div>
+                <div class="search-filters">
+                    <span class="search-filter active" data-type="all" onclick="setSearchFilter('all')">Todo</span>
+                    <span class="search-filter" data-type="responses" onclick="setSearchFilter('responses')">Respuestas</span>
+                    <span class="search-filter" data-type="keywords" onclick="setSearchFilter('keywords')">Palabras Clave</span>
+                    <span class="search-filter" data-type="categories" onclick="setSearchFilter('categories')">Categorías</span>
+                    <span class="search-filter" data-type="messages" onclick="setSearchFilter('messages')">Mensajes</span>
+                </div>
+            </div>
+            <div class="search-results" id="searchResults"></div>
+        </div>
+        
+        <div class="success-message" id="successMessage"></div>
+        <div class="error-message" id="errorMessage"></div>
+        
+        <div class="tabs">
+            <button class="tab active" onclick="showTab(event, 'stats')">📊 Estadísticas</button>
+            <button class="tab" onclick="showTab(event, 'responses')">💬 Respuestas</button>
+            <button class="tab" onclick="showTab(event, 'keywords')">🔍 Palabras Clave</button>
+            <button class="tab" onclick="showTab(event, 'categories')">📁 Categorías</button>
+            <button class="tab" onclick="showTab(event, 'database')">🗄️ Base de Datos</button>
+        </div>
+        
+        <!-- Pestaña de Estadísticas -->
+        <div id="stats" class="tab-content active">
+            <h2>📈 Estadísticas de Uso</h2>
+            <div class="stats-grid" id="statsGrid">
+                <!-- Se llena dinámicamente -->
+            </div>
+        </div>
+        
+        <!-- Pestaña de Respuestas -->
+        <div id="responses" class="tab-content">
+            <h2>💬 Administrar Respuestas</h2>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+                <div>
+                    <h3>Agregar Nueva Respuesta</h3>
+                    <form id="responseForm">
+                        <div class="form-group">
+                            <label>Categoría:</label>
+                            <select id="responseCategory" required>
+                                <option value="">Seleccionar categoría...</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Texto de la Respuesta:</label>
+                            <textarea id="responseText" rows="3" placeholder="Escribe la respuesta del bot..." required></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Emoji (opcional):</label>
+                            <input type="text" id="responseEmoji" placeholder="🤠" maxlength="10">
+                        </div>
+                        
+                        <button type="submit">Agregar Respuesta</button>
+                    </form>
+                </div>
+                
+                <div>
+                    <h3>Ver Respuestas por Categoría</h3>
+                    <div class="form-group">
+                        <label>Seleccionar Categoría:</label>
+                        <select id="viewCategory" onchange="loadResponses()">
+                            <option value="">Seleccionar...</option>
+                        </select>
+                    </div>
+                    
+                    <div class="responses-list" id="responsesList">
+                        <p>Selecciona una categoría para ver las respuestas</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Pestaña de Palabras Clave -->
+        <div id="keywords" class="tab-content">
+            <h2>🔍 Administrar Palabras Clave</h2>
+            
+            <form id="keywordForm">
+                <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 15px; align-items: end;">
+                    <div class="form-group">
+                        <label>Palabra Clave:</label>
+                        <input type="text" id="keywordText" placeholder="Ej: hola, jaripeo, gracias..." required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Categoría:</label>
+                        <select id="keywordCategory" required>
+                            <option value="">Seleccionar...</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Prioridad (1-10):</label>
+                        <input type="number" id="keywordPriority" min="1" max="10" value="5" required>
+                    </div>
+                </div>
+                
+                <button type="submit">Agregar Palabra Clave</button>
+            </form>
+        </div>
+        
+        <!-- Pestaña de Categorías -->
+        <div id="categories" class="tab-content">
+            <h2>📁 Administrar Categorías</h2>
+            
+            <form id="categoryForm">
+                <div class="form-group">
+                    <label>Nombre de la Categoría:</label>
+                    <input type="text" id="categoryName" placeholder="Ej: deportes, comida, música..." required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Descripción:</label>
+                    <textarea id="categoryDescription" rows="2" placeholder="Descripción de la categoría..."></textarea>
+                </div>
+                
+                <button type="submit">Crear Categoría</button>
+            </form>
+        </div>
+        
+        <!-- Pestaña de Base de Datos -->
+        <div id="database" class="tab-content">
+            <h2>🗄️ Explorador de Base de Datos</h2>
+            
+            <div class="table-selector">
+                <div class="form-group">
+                    <label>Seleccionar Tabla:</label>
+                    <select id="tableSelect" onchange="loadTableData()">
+                        <option value="">Seleccionar tabla...</option>
+                        <option value="chat_messages">💬 chat_messages - Mensajes del chat</option>
+                        <option value="bot_categories">📁 bot_categories - Categorías del bot</option>
+                        <option value="bot_keywords">🔍 bot_keywords - Palabras clave</option>
+                        <option value="bot_responses">💭 bot_responses - Respuestas del bot</option>
+                        <option value="bot_default_responses">🔄 bot_default_responses - Respuestas por defecto</option>
+                        <option value="chat_users">👥 chat_users - Usuarios del chat</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div id="tableInfo" class="table-info" style="display: none;">
+                <h3 id="tableTitle"></h3>
+                <div class="table-stats" id="tableStats"></div>
+            </div>
+            
+            <div class="form-group" style="display: flex; gap: 10px; align-items: center;">
+                <label>Registros por página:</label>
+                <select id="recordsPerPage" onchange="loadTableData()" style="width: auto;">
+                    <option value="10">10</option>
+                    <option value="25" selected>25</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                </select>
+                
+                <label style="margin-left: 20px;">Buscar:</label>
+                <input type="text" id="searchInput" placeholder="Buscar en la tabla..." onkeyup="debounceSearch()" style="width: 300px;">
+            </div>
+            
+            <div id="tableDataContainer">
+                <p style="text-align: center; color: #666; padding: 40px;">Selecciona una tabla para ver sus datos</p>
+            </div>
+            
+            <div class="pagination" id="pagination" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost/chat%20Database/chat_api_v3.php';
+        
+        // Función para cambiar pestañas
+        function showTab(evt, tabName) {
+            const tabContents = document.getElementsByClassName("tab-content");
+            const tabs = document.getElementsByClassName("tab");
+            
+                        for (let i = 0; i < tabContents.length; i++) {
+                tabContents[i].classList.remove("active");
+            }
+            
+            for (let i = 0; i < tabs.length; i++) {
+                tabs[i].classList.remove("active");
+            }
+            
+            document.getElementById(tabName).classList.add("active");
+            evt.currentTarget.classList.add("active");
+            
+            // Cargar datos específicos de la pestaña cuando se selecciona
+            if (tabName === 'stats') {
+                loadStats();
+            } else if (tabName === 'responses') {
+                loadCategories('responseCategory');
+                loadCategories('viewCategory');
+            } else if (tabName === 'keywords') {
+                loadCategories('keywordCategory');
+            } else if (tabName === 'database') {
+                // La pestaña de base de datos se carga cuando se selecciona una tabla
+            }
+        }
+        
+        // Función para mostrar mensajes de éxito/error
+        function showMessage(type, message) {
+            const element = type === 'success' 
+                ? document.getElementById('successMessage') 
+                : document.getElementById('errorMessage');
+            
+            element.textContent = message;
+            element.style.display = 'block';
+            
+            setTimeout(() => {
+                element.style.display = 'none';
+            }, 5000);
+        }
+        
+        // Función para cargar estadísticas
+        async function loadStats() {
+            try {
+                const response = await fetch(`${API_URL}?action=get_stats`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    const statsGrid = document.getElementById('statsGrid');
+                    statsGrid.innerHTML = `
+                        <div class="stat-card">
+                            <div class="stat-number">${data.data.total_users}</div>
+                            <div>Usuarios totales</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number">${data.data.active_today}</div>
+                            <div>Usuarios activos hoy</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number">${data.data.total_messages}</div>
+                            <div>Mensajes totales</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number">${data.data.avg_response_time}s</div>
+                            <div>Tiempo promedio de respuesta</div>
+                        </div>
+                    `;
+                } else {
+                    showMessage('error', data.message);
+                }
+            } catch (error) {
+                showMessage('error', 'Error al cargar estadísticas');
+                console.error(error);
+            }
+        }
+        
+        // Función para cargar categorías en un select
+        async function loadCategories(selectId) {
+            try {
+                const response = await fetch(`${API_URL}?action=get_categories`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    const select = document.getElementById(selectId);
+                    select.innerHTML = '<option value="">Seleccionar categoría...</option>';
+                    
+                    data.data.forEach(category => {
+                        const option = document.createElement('option');
+                        option.value = category.id;
+                        option.textContent = category.name;
+                        select.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Error al cargar categorías:', error);
+            }
+        }
+        
+        // Función para cargar respuestas por categoría
+        async function loadResponses() {
+            const categoryId = document.getElementById('viewCategory').value;
+            
+            if (!categoryId) {
+                document.getElementById('responsesList').innerHTML = '<p>Selecciona una categoría para ver las respuestas</p>';
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_URL}?action=get_responses&category_id=${categoryId}`);
+                const data = await response.json();
+                
+                const responsesList = document.getElementById('responsesList');
+                
+                if (data.success && data.data.length > 0) {
+                    responsesList.innerHTML = '';
+                    data.data.forEach(res => {
+                        const item = document.createElement('div');
+                        item.className = 'response-item';
+                        item.innerHTML = `
+                            <p><strong>${res.emoji || ''} ${res.text}</strong></p>
+                            <small>Categoría: ${res.category_name}</small>
+                            <button onclick="deleteResponse(${res.id})" style="float: right; padding: 5px 10px; margin-left: 10px;">Eliminar</button>
+                            <button onclick="editResponse(${res.id})" style="float: right; padding: 5px 10px;">Editar</button>
+                        `;
+                        responsesList.appendChild(item);
+                    });
+                } else {
+                    responsesList.innerHTML = '<p>No hay respuestas para esta categoría</p>';
+                }
+            } catch (error) {
+                console.error('Error al cargar respuestas:', error);
+            }
+        }
+        
+        // Función para agregar nueva respuesta
+        document.getElementById('responseForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                category_id: document.getElementById('responseCategory').value,
+                text: document.getElementById('responseText').value,
+                emoji: document.getElementById('responseEmoji').value
+            };
+            
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        action: 'add_response',
+                        ...formData
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showMessage('success', 'Respuesta agregada correctamente');
+                    document.getElementById('responseForm').reset();
+                    loadResponses();
+                } else {
+                    showMessage('error', data.message);
+                }
+            } catch (error) {
+                showMessage('error', 'Error al agregar respuesta');
+                console.error(error);
+            }
+        });
+        
+        // Función para agregar palabra clave
+        document.getElementById('keywordForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                keyword: document.getElementById('keywordText').value,
+                category_id: document.getElementById('keywordCategory').value,
+                priority: document.getElementById('keywordPriority').value
+            };
+            
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        action: 'add_keyword',
+                        ...formData
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showMessage('success', 'Palabra clave agregada correctamente');
+                    document.getElementById('keywordForm').reset();
+                } else {
+                    showMessage('error', data.message);
+                }
+            } catch (error) {
+                showMessage('error', 'Error al agregar palabra clave');
+                console.error(error);
+            }
+        });
+        
+        // Función para agregar categoría
+        document.getElementById('categoryForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                name: document.getElementById('categoryName').value,
+                description: document.getElementById('categoryDescription').value
+            };
+            
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        action: 'add_category',
+                        ...formData
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showMessage('success', 'Categoría creada correctamente');
+                    document.getElementById('categoryForm').reset();
+                    // Actualizar selects de categorías en todas las pestañas
+                    loadCategories('responseCategory');
+                    loadCategories('viewCategory');
+                    loadCategories('keywordCategory');
+                } else {
+                    showMessage('error', data.message);
+                }
+            } catch (error) {
+                showMessage('error', 'Error al crear categoría');
+                console.error(error);
+            }
+        });
+        
+        // Función para eliminar respuesta
+        async function deleteResponse(id) {
+            if (!confirm('¿Estás seguro de que deseas eliminar esta respuesta?')) return;
+            
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        action: 'delete_response',
+                        id: id
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showMessage('success', 'Respuesta eliminada correctamente');
+                    loadResponses();
+                } else {
+                    showMessage('error', data.message);
+                }
+            } catch (error) {
+                showMessage('error', 'Error al eliminar respuesta');
+                console.error(error);
+            }
+        }
+        
+        // Función para editar respuesta (simplificada)
+        function editResponse(id) {
+            // Implementar lógica de edición según tus necesidades
+            alert(`Editar respuesta con ID: ${id}\nEsta funcionalidad se implementaría según tus necesidades específicas.`);
+        }
+        
+        // Variables para la funcionalidad de base de datos
+        let currentPage = 1;
+        let currentTable = '';
+        let searchTimeout;
+        
+        // Función para cargar datos de una tabla
+        async function loadTableData(page = 1) {
+            const table = document.getElementById('tableSelect').value;
+            const limit = document.getElementById('recordsPerPage').value;
+            const search = document.getElementById('searchInput').value;
+            
+            if (!table) {
+                document.getElementById('tableDataContainer').innerHTML = '<p style="text-align: center; color: #666; padding: 40px;">Selecciona una tabla para ver sus datos</p>';
+                document.getElementById('tableInfo').style.display = 'none';
+                document.getElementById('pagination').style.display = 'none';
+                return;
+            }
+            
+            currentTable = table;
+            currentPage = page;
+            
+            try {
+                // Cargar estadísticas de la tabla
+                await loadTableStats(table);
+                
+                // Cargar datos de la tabla
+                const url = `${API_URL}?action=get_table_data&table=${table}&page=${page}&limit=${limit}&search=${encodeURIComponent(search)}`;
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayTableData(data);
+                    displayPagination(data.pagination);
+                } else {
+                    showMessage('error', data.error);
+                }
+            } catch (error) {
+                showMessage('error', 'Error al cargar datos de la tabla');
+                console.error(error);
+            }
+        }
+        
+        // Función para cargar estadísticas de una tabla
+        async function loadTableStats(table) {
+            try {
+                const response = await fetch(`${API_URL}?action=get_table_stats&table=${table}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    const tableInfo = document.getElementById('tableInfo');
+                    const tableTitle = document.getElementById('tableTitle');
+                    const tableStats = document.getElementById('tableStats');
+                    
+                    tableTitle.textContent = `Información de la tabla: ${table}`;
+                    
+                    let statsHTML = `<div class="table-stat">
+                        <div style="font-size: 1.5em; font-weight: bold;">${data.data.total_records}</div>
+                        <div>Total de registros</div>
+                    </div>`;
+                    
+                    if (data.data.active_records !== undefined) {
+                        statsHTML += `<div class="table-stat">
+                            <div style="font-size: 1.5em; font-weight: bold;">${data.data.active_records}</div>
+                            <div>Registros activos</div>
+                        </div>`;
+                    }
+                    
+                    if (data.data.last_record) {
+                        const lastRecord = new Date(data.data.last_record).toLocaleString();
+                        statsHTML += `<div class="table-stat">
+                            <div style="font-size: 1.1em; font-weight: bold;">${lastRecord}</div>
+                            <div>Último registro</div>
+                        </div>`;
+                    }
+                    
+                    tableStats.innerHTML = statsHTML;
+                    tableInfo.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Error al cargar estadísticas de la tabla:', error);
+            }
+        }
+        
+        // Función para mostrar los datos de la tabla
+        function displayTableData(data) {
+            const container = document.getElementById('tableDataContainer');
+            
+            if (data.data.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #666; padding: 40px;">No se encontraron datos</p>';
+                return;
+            }
+            
+            // Crear la tabla HTML
+            let tableHTML = '<table class="data-table"><thead><tr>';
+            
+            // Crear encabezados basados en las columnas
+            data.columns.forEach(column => {
+                tableHTML += `<th>${column.Field}</th>`;
+            });
+            
+            tableHTML += '</tr></thead><tbody>';
+            
+            // Agregar filas de datos
+            data.data.forEach(row => {
+                tableHTML += '<tr>';
+                data.columns.forEach(column => {
+                    let value = row[column.Field];
+                    
+                    // Formatear valores especiales
+                    if (value === null) {
+                        value = '<em style="color: #999;">NULL</em>';
+                    } else if (typeof value === 'string' && value.length > 100) {
+                        value = value.substring(0, 100) + '...';
+                    } else if (column.Field.includes('created_at') || column.Field.includes('updated_at')) {
+                        if (value) {
+                            value = new Date(value).toLocaleString();
+                        }
+                    }
+                    
+                    tableHTML += `<td>${value}</td>`;
+                });
+                tableHTML += '</tr>';
+            });
+            
+            tableHTML += '</tbody></table>';
+            container.innerHTML = tableHTML;
+        }
+        
+        // Función para mostrar la paginación
+        function displayPagination(pagination) {
+            const container = document.getElementById('pagination');
+            
+            if (pagination.total_pages <= 1) {
+                container.style.display = 'none';
+                return;
+            }
+            
+            container.style.display = 'flex';
+            let paginationHTML = '';
+            
+            // Botón anterior
+            if (pagination.current_page > 1) {
+                paginationHTML += `<button onclick="loadTableData(${pagination.current_page - 1})">« Anterior</button>`;
+            }
+            
+            // Números de página
+            const startPage = Math.max(1, pagination.current_page - 2);
+            const endPage = Math.min(pagination.total_pages, pagination.current_page + 2);
+            
+            for (let i = startPage; i <= endPage; i++) {
+                const activeClass = i === pagination.current_page ? 'active' : '';
+                paginationHTML += `<button class="${activeClass}" onclick="loadTableData(${i})">${i}</button>`;
+            }
+            
+            // Botón siguiente
+            if (pagination.current_page < pagination.total_pages) {
+                paginationHTML += `<button onclick="loadTableData(${pagination.current_page + 1})">Siguiente »</button>`;
+            }
+            
+            // Información de paginación
+            paginationHTML += `<span style="margin-left: 20px; color: #666;">
+                Página ${pagination.current_page} de ${pagination.total_pages} 
+                (${pagination.total_records} registros total)
+            </span>`;
+            
+            container.innerHTML = paginationHTML;
+        }
+        
+        // Función para búsqueda con retraso
+        function debounceSearch() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                if (currentTable) {
+                    loadTableData(1); // Resetear a la página 1 cuando se busca
+                }
+            }, 500);
+        }
+        
+        // Variables para el buscador global
+        let globalSearchTimeout;
+        let currentSearchFilter = 'all';
+        
+        // Función para establecer filtro de búsqueda
+        function setSearchFilter(type) {
+            // Remover clase active de todos los filtros
+            document.querySelectorAll('.search-filter').forEach(filter => {
+                filter.classList.remove('active');
+            });
+            
+            // Agregar clase active al filtro seleccionado
+            document.querySelector(`[data-type="${type}"]`).classList.add('active');
+            currentSearchFilter = type;
+            
+            // Realizar búsqueda nuevamente si hay texto
+            const searchInput = document.getElementById('globalSearch');
+            if (searchInput.value.trim().length >= 2) {
+                performGlobalSearch();
+            }
+        }
+        
+        // Función para realizar búsqueda global
+        function performGlobalSearch() {
+            clearTimeout(globalSearchTimeout);
+            
+            const query = document.getElementById('globalSearch').value.trim();
+            const resultsContainer = document.getElementById('searchResults');
+            
+            if (query.length < 2) {
+                resultsContainer.style.display = 'none';
+                return;
+            }
+            
+            globalSearchTimeout = setTimeout(async () => {
+                try {
+                    const response = await fetch(`${API_URL}?action=global_search&q=${encodeURIComponent(query)}&type=${currentSearchFilter}`);
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        displaySearchResults(data.data, data.query);
+                    } else {
+                        showMessage('error', 'Error en la búsqueda: ' + data.error);
+                    }
+                } catch (error) {
+                    console.error('Error en búsqueda global:', error);
+                    showMessage('error', 'Error al realizar la búsqueda');
+                }
+            }, 300);
+        }
+        
+        // Función para mostrar resultados de búsqueda
+        function displaySearchResults(results, query) {
+            const resultsContainer = document.getElementById('searchResults');
+            
+            if (results.length === 0) {
+                resultsContainer.innerHTML = `
+                    <div style="text-align: center; padding: 20px; color: #666;">
+                        <i style="font-size: 24px;">🔍</i>
+                        <p>No se encontraron resultados para "<strong>${query}</strong>"</p>
+                    </div>
+                `;
+                resultsContainer.style.display = 'block';
+                return;
+            }
+            
+            let resultsHTML = `<h4 style="margin-bottom: 15px; color: #333;">Resultados de búsqueda para "${query}" (${results.length})</h4>`;
+            
+            results.forEach(result => {
+                // Resaltar término de búsqueda
+                const highlightedTitle = highlightSearchTerm(result.title, query);
+                const highlightedContent = highlightSearchTerm(result.content, query);
+                
+                resultsHTML += `
+                    <div class="search-result-item" onclick="goToResult('${result.table}', ${result.id})">
+                        <div class="search-result-header">
+                            <div class="search-result-title">${highlightedTitle}</div>
+                            <div class="search-result-type">${result.type}</div>
+                        </div>
+                        <div class="search-result-content">${highlightedContent}</div>
+                    </div>
+                `;
+            });
+            
+            resultsContainer.innerHTML = resultsHTML;
+            resultsContainer.style.display = 'block';
+        }
+        
+        // Función para resaltar términos de búsqueda
+        function highlightSearchTerm(text, term) {
+            if (!text || !term) return text;
+            
+            const regex = new RegExp(`(${term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+            return text.replace(regex, '<span class="search-highlight">$1</span>');
+        }
+        
+        // Función para ir al resultado seleccionado
+        function goToResult(table, id) {
+            // Cerrar resultados de búsqueda
+            document.getElementById('searchResults').style.display = 'none';
+            document.getElementById('globalSearch').value = '';
+            
+            // Determinar a qué pestaña ir según el tipo de resultado
+            switch (table) {
+                case 'bot_responses':
+                    // Ir a pestaña de respuestas
+                    showTab({currentTarget: document.querySelector('[onclick*="responses"]')}, 'responses');
+                    setTimeout(() => {
+                        // Seleccionar la tabla en el explorador de BD
+                        document.getElementById('tableSelect').value = table;
+                        loadTableData();
+                    }, 100);
+                    break;
+                    
+                case 'bot_keywords':
+                    // Ir a pestaña de palabras clave
+                    showTab({currentTarget: document.querySelector('[onclick*="keywords"]')}, 'keywords');
+                    break;
+                    
+                case 'bot_categories':
+                    // Ir a pestaña de categorías
+                    showTab({currentTarget: document.querySelector('[onclick*="categories"]')}, 'categories');
+                    break;
+                    
+                case 'chat_messages':
+                    // Ir a pestaña de base de datos y mostrar mensajes
+                    showTab({currentTarget: document.querySelector('[onclick*="database"]')}, 'database');
+                    setTimeout(() => {
+                        document.getElementById('tableSelect').value = table;
+                        loadTableData();
+                    }, 100);
+                    break;
+                    
+                default:
+                    // Por defecto, ir a la pestaña de base de datos
+                    showTab({currentTarget: document.querySelector('[onclick*="database"]')}, 'database');
+                    setTimeout(() => {
+                        document.getElementById('tableSelect').value = table;
+                        loadTableData();
+                    }, 100);
+            }
+        }
+        
+        // Ocultar resultados al hacer clic fuera
+        document.addEventListener('click', function(event) {
+            const searchContainer = document.querySelector('.global-search');
+            const resultsContainer = document.getElementById('searchResults');
+            
+            if (!searchContainer.contains(event.target)) {
+                resultsContainer.style.display = 'none';
+            }
+        });
+        
+        // Cargar datos iniciales
+        document.addEventListener('DOMContentLoaded', function() {
+            loadStats();
+            loadCategories('responseCategory');
+            loadCategories('viewCategory');
+            loadCategories('keywordCategory');
+        });
+    </script>
+</body>
+</html>
