@@ -211,9 +211,9 @@ El panel de administración incluye:
 - 📝 **Este archivo:** `README.md`
 
 ### Contacto
-- 📧 Email: [tu-email@ejemplo.com]
-- 💬 Issues: [GitHub Issues]
-- 📱 WhatsApp: [Tu número]
+- 📧 Email: acheyopli15@gmail.com
+- 💬 Issues: Ache2503
+- 📱 WhatsApp: +52 717 116 4363
 
 ## 📄 Licencia
 
